@@ -1,0 +1,158 @@
+Assignment 3:
+1)SJF
+#include <stdio.h>
+#include <stdbool.h>
+struct Process {
+int id;
+int arrivalTime;
+int burstTime;
+int remainingTime;
+};
+void sortByArrivalTime(struct Process processes[], int n) {
+for (int i = 0; i < n - 1; i++) {
+for (int j = 0; j < n - i - 1; j++) {
+if (processes[j].arrivalTime > processes[j + 1].arrivalTime) {
+struct Process temp = processes[j];
+processes[j] = processes[j + 1];
+processes[j + 1] = temp;
+}
+}
+}
+}
+int findShortestJob(struct Process processes[], int n, int currentTime) {
+int shortestJob = -1;
+int shortestBurst =99999;
+for (int i = 0; i < n; i++) {
+if (processes[i].arrivalTime <= currentTime && processes[i].remainingTime > 0 &&
+processes[i].remainingTime < shortestBurst) {
+shortestJob = i;
+shortestBurst = processes[i].remainingTime;
+}
+}
+return shortestJob;
+}
+int main() {
+int n;
+printf("Enter the number of processes: ");
+scanf("%d", &n);
+struct Process processes[n];
+for (int i = 0; i < n; i++) {
+processes[i].id = i + 1;
+printf("Enter arrival time and burst time for process %d: ", processes[i].id);
+scanf("%d %d", &processes[i].arrivalTime, &processes[i].burstTime);
+processes[i].remainingTime = processes[i].burstTime;
+}
+sortByArrivalTime(processes, n);
+int currentTime = 0;
+int completedProcesses = 0;
+int shortestJob = -1;
+int completionTime[n];
+int turnaroundTime[n];
+int waitingTime[n];
+while (completedProcesses < n) {
+shortestJob = findShortestJob(processes, n, currentTime);
+if (shortestJob == -1) {
+currentTime++;
+continue;
+}
+processes[shortestJob].remainingTime--;
+currentTime++;
+if (processes[shortestJob].remainingTime == 0) {
+completedProcesses++;
+completionTime[shortestJob] = currentTime;
+}
+}
+printf("\nProcess\tArrival\tBurst\tCompletion\tTurnaround\tWaiting\n");
+for (int i = 0; i < n; i++) {
+turnaroundTime[i] = completionTime[i] - processes[i].arrivalTime;
+waitingTime[i] = turnaroundTime[i] - processes[i].burstTime;
+printf("%d\t%d\t%d\t%d\t%d\t%d\n", processes[i].id, processes[i].arrivalTime, 
+processes[i].burstTime,
+completionTime[i], turnaroundTime[i], waitingTime[i]);
+}
+return 0;
+}
+
+2)RR
+#include <stdio.h>
+#include <cstring>
+// Struct representing process
+struct Process {
+unsigned int arrivalTime;
+unsigned int burstTime;
+unsigned int remainingTime;
+unsigned int pid;
+};
+// Function to swap structs
+void swap(struct Process* a, struct Process* b) {
+struct Process temp = *a;
+*a = *b;
+*b = temp;
+}
+// Function to sort processes according to arrival times
+void sortArrivalTimes(struct Process processes[], int n) {
+for(int i = 0; i < n-1; i++) {
+if(processes[i].arrivalTime > processes[i+1].arrivalTime) {
+swap(&processes[i+1], &processes[i]);
+}
+}
+}
+int main() {
+int n;
+int timeQuantum;
+printf("Enter the number of processes: ");
+scanf("%d", &n);
+printf("\n");
+printf("Enter the time quantum: ");
+scanf("%d", &timeQuantum);
+printf("\n");
+struct Process processes[n];
+for(int i = 0; i < n; i++) {
+processes[i].pid = i+1;
+printf("Enter the arrival time of process %d: ", i+1);
+scanf("%d", &processes[i].arrivalTime);
+printf("Enter the burst time of process %d: ", i+1);
+scanf("%d", &processes[i].burstTime);
+processes[i].remainingTime = processes[i].burstTime;
+printf("\n");
+}
+unsigned int currentTime = 0;
+int completedProcesses = 0;
+unsigned int completionTime[n];
+// Setting initial completion times to 0
+memset(completionTime, 0x00, n);
+unsigned int turnaroundTime[n];
+unsigned int waitingTime[n];
+// Sort all the processes according to their arrival times
+sortArrivalTimes(processes, n);
+while(1) {
+int done = 1;
+for(int i = 0; i < n; i++) {
+if(processes[i].remainingTime > 0 && processes[i].arrivalTime <= currentTime) {
+done = 0;
+if (processes[i].remainingTime > timeQuantum) {
+currentTime += timeQuantum;
+processes[i].remainingTime -= timeQuantum;
+} else {
+currentTime += processes[i].remainingTime;
+processes[i].remainingTime = 0;
+completionTime[i] = currentTime;
+turnaroundTime[i] = completionTime[i] - processes[i].arrivalTime;
+waitingTime[i] = turnaroundTime[i] - processes[i].burstTime;
+}
+}
+}
+if(done) {
+break;
+}
+}
+printf("\nProcess\tArrival\tBurst\tCompletion\tTurnaround\tWaiting\n");
+for (int i = 0; i < n; i++) {
+// turnaroundTime[i] = completionTime[i] - processes[i].arrivalTime;
+// waitingTime[i] = turnaroundTime[i] - processes[i].burstTime;
+printf("%d\t%d\t%d\t%d\t\t%d\t\t%d\n", processes[i].pid, processes[i].arrivalTime, 
+processes[i].burstTime,
+completionTime[i], turnaroundTime[i], waitingTime[i]);
+}
+return 0;
+}
