@@ -1,3 +1,81 @@
+1)SJF
+#include <stdio.h>
+#include <stdbool.h>
+struct Process {
+int id;
+int arrivalTime;
+int burstTime;
+int remainingTime;
+};
+void sortByArrivalTime(struct Process processes[], int n) {
+for (int i = 0; i < n - 1; i++) {
+for (int j = 0; j < n - i - 1; j++) {
+if (processes[j].arrivalTime > processes[j + 1].arrivalTime) {
+struct Process temp = processes[j];
+processes[j] = processes[j + 1];
+processes[j + 1] = temp;
+}
+}
+}
+}
+int findShortestJob(struct Process processes[], int n, int currentTime) {
+int shortestJob = -1;
+int shortestBurst =99999;
+for (int i = 0; i < n; i++) {
+if (processes[i].arrivalTime <= currentTime && processes[i].remainingTime > 0 &&
+processes[i].remainingTime < shortestBurst) {
+shortestJob = i;
+shortestBurst = processes[i].remainingTime;
+}
+}
+return shortestJob;
+}
+int main() {
+int n;
+printf("Enter the number of processes: ");
+scanf("%d", &n);
+struct Process processes[n];
+for (int i = 0; i < n; i++) {
+processes[i].id = i + 1;
+printf("Enter arrival time and burst time for process %d: ", processes[i].id);
+scanf("%d %d", &processes[i].arrivalTime, &processes[i].burstTime);
+processes[i].remainingTime = processes[i].burstTime;
+}
+sortByArrivalTime(processes, n);
+int currentTime = 0;
+int completedProcesses = 0;
+int shortestJob = -1;
+int completionTime[n];
+int turnaroundTime[n];
+int waitingTime[n];
+while (completedProcesses < n) {
+shortestJob = findShortestJob(processes, n, currentTime);
+if (shortestJob == -1) {
+currentTime++;
+continue;
+}
+processes[shortestJob].remainingTime--;
+currentTime++;
+if (processes[shortestJob].remainingTime == 0) {
+completedProcesses++;
+completionTime[shortestJob] = currentTime;
+}
+}
+printf("\nProcess\tArrival\tBurst\tCompletion\tTurnaround\tWaiting\n");
+for (int i = 0; i < n; i++) {
+turnaroundTime[i] = completionTime[i] - processes[i].arrivalTime;
+waitingTime[i] = turnaroundTime[i] - processes[i].burstTime;
+printf("%d\t%d\t%d\t%d\t%d\t%d\n", processes[i].id, processes[i].arrivalTime, 
+processes[i].burstTime,
+completionTime[i], turnaroundTime[i], waitingTime[i]);
+}
+return 0;
+}
+
+
+
+RR
+
 #include <stdio.h>
 
 struct process {
