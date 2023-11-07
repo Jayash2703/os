@@ -1,140 +1,282 @@
-1)SJF
 #include <stdio.h>
-#include <stdbool.h>
+#include <stdlib.h>
+#include<stdbool.h>
+
 struct Process {
-int id;
-int arrivalTime;
-int burstTime;
-int remainingTime;
-};
-void sortByArrivalTime(struct Process processes[], int n) {
-for (int i = 0; i < n - 1; i++) {
-for (int j = 0; j < n - i - 1; j++) {
-if (processes[j].arrivalTime > processes[j + 1].arrivalTime) {
-struct Process temp = processes[j];
-processes[j] = processes[j + 1];
-processes[j + 1] = temp;
-}
-}
-}
-}
-int findShortestJob(struct Process processes[], int n, int currentTime) {
-int shortestJob = -1;
-int shortestBurst =99999;
-for (int i = 0; i < n; i++) {
-if (processes[i].arrivalTime <= currentTime && processes[i].remainingTime > 0 &&
-processes[i].remainingTime < shortestBurst) {
-shortestJob = i;
-shortestBurst = processes[i].remainingTime;
-}
-}
-return shortestJob;
-}
-int main() {
-int n;
-printf("Enter the number of processes: ");
-scanf("%d", &n);
-struct Process processes[n];
-for (int i = 0; i < n; i++) {
-processes[i].id = i + 1;
-printf("Enter arrival time and burst time for process %d: ", processes[i].id);
-scanf("%d %d", &processes[i].arrivalTime, &processes[i].burstTime);
-processes[i].remainingTime = processes[i].burstTime;
-}
-sortByArrivalTime(processes, n);
-int currentTime = 0;
-int completedProcesses = 0;
-int shortestJob = -1;
-int completionTime[n];
-int turnaroundTime[n];
-int waitingTime[n];
-while (completedProcesses < n) {
-shortestJob = findShortestJob(processes, n, currentTime);
-if (shortestJob == -1) {
-currentTime++;
-continue;
-}
-processes[shortestJob].remainingTime--;
-currentTime++;
-if (processes[shortestJob].remainingTime == 0) {
-completedProcesses++;
-completionTime[shortestJob] = currentTime;
-}
-}
-printf("\nProcess\tArrival\tBurst\tCompletion\tTurnaround\tWaiting\n");
-for (int i = 0; i < n; i++) {
-turnaroundTime[i] = completionTime[i] - processes[i].arrivalTime;
-waitingTime[i] = turnaroundTime[i] - processes[i].burstTime;
-printf("%d\t%d\t%d\t%d\t%d\t%d\n", processes[i].id, processes[i].arrivalTime, 
-processes[i].burstTime,
-completionTime[i], turnaroundTime[i], waitingTime[i]);
-}
-return 0;
-}
-
-
-
-RR
-
-#include <stdio.h>
-
-struct process {
-    int arrival_time;
-    int burst_time;
-    int remaining_time;
-    int completion_time;
     int id;
+    int arrivalTime;
+    int burstTime;
+    int remainingTime;
+    int completionTime;
+    bool executed;
 };
 
-void scheduling(struct process process[], int time_quantum, int n) {
-    int current_time = 0;
-    int remaining_process = n;
-
-    while (remaining_process > 0) {
-        for (int i = 0; i < n; i++) {
-            if (process[i].arrival_time <= current_time && process[i].remaining_time > 0) {
-                if (process[i].remaining_time <= time_quantum) {
-                    current_time += process[i].remaining_time;
-                    process[i].remaining_time = 0;
-                    process[i].completion_time = current_time;
-                    remaining_process--;
-                } else {
-                    current_time += time_quantum;
-                    process[i].remaining_time -= time_quantum;
-                }
+void sortByArrivalTime(struct Process processes[], int n) {
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - i - 1; j++) {
+            if (processes[j].arrivalTime > processes[j + 1].arrivalTime) {
+                struct Process temp = processes[j];
+                processes[j] = processes[j + 1];
+                processes[j + 1] = temp;
             }
         }
     }
 }
 
+int findShortestJob(struct Process processes[], int n, int currentTime) {
+    int shortestJobIndex = -1;
+    int shortestBurst = 99999;
+    for (int i = 0; i < n; i++) {
+        if (processes[i].arrivalTime <= currentTime && processes[i].remainingTime > 0 &&
+            processes[i].remainingTime < shortestBurst) {
+            shortestJobIndex = i;
+            shortestBurst = processes[i].remainingTime;
+        }
+    }
+    return shortestJobIndex;
+}
 
-int main() {
+void sjfnp() {
     int n;
-    printf("Enter number of processes: ");
+    printf("Enter the number of processes: ");
     scanf("%d", &n);
-
-    struct process processes[n];
+    struct Process processes[n];
 
     for (int i = 0; i < n; i++) {
         processes[i].id = i + 1;
-        printf("Enter arrival time for Process %d: ", i + 1);
-        scanf("%d", &processes[i].arrival_time);
-        printf("Enter burst time for Process %d: ", i + 1);
-        scanf("%d", &processes[i].burst_time);
-        processes[i].remaining_time = processes[i].burst_time;
+        printf("Enter arrival time and burst time for process %d: ", processes[i].id);
+        scanf("%d %d", &processes[i].arrivalTime, &processes[i].burstTime);
+        processes[i].remainingTime = processes[i].burstTime;
     }
 
-    int time_quantam;
-    printf("Enter time quantum: ");
-    scanf("%d", &time_quantam);
+    sortByArrivalTime(processes, n);
 
-    scheduling(processes, time_quantam, n);
+    int currentTime = 0;
+    int completedProcesses = 0;
+    int completionTime[n];
+    int turnaroundTime[n];
+    int waitingTime[n];
 
-    printf("\nProcess\tArrival Time\tBurst Time\tCompletion Time\n");
+    printf("Gantt Chart:\n");
+    while (completedProcesses < n) {
+        int shortestJobIndex = findShortestJob(processes, n, currentTime);
+        if (shortestJobIndex == -1) {
+            printf("IDLE "); // No process is running
+            currentTime++;
+        } else {
+            printf("P%d ", processes[shortestJobIndex].id);
+            processes[shortestJobIndex].remainingTime--;
+            currentTime++;
+
+            if (processes[shortestJobIndex].remainingTime == 0) {
+                completedProcesses++;
+                completionTime[shortestJobIndex] = currentTime;
+            }
+        }
+    }
+    printf("\n");
+
+    int totalTurnaroundTime = 0;
+    int totalWaitingTime = 0;
     for (int i = 0; i < n; i++) {
-        printf("%d\t\t%d\t\t%d\t\t%d\n", processes[i].id, processes[i].arrival_time,
-               processes[i].burst_time, processes[i].completion_time);
+        turnaroundTime[i] = completionTime[i] - processes[i].arrivalTime;
+        waitingTime[i] = turnaroundTime[i] - processes[i].burstTime;
+        totalTurnaroundTime += turnaroundTime[i];
+        totalWaitingTime += waitingTime[i];
     }
 
+    printf("\nProcess\tArrival\tBurst\tCompletion\tTurnaround\tWaiting\n");
+    for (int i = 0; i < n; i++) {
+        printf("%d\t%d\t%d\t%d\t\t%d\t\t%d\n", processes[i].id, processes[i].arrivalTime,
+               processes[i].burstTime,
+               completionTime[i], turnaroundTime[i], waitingTime[i]);
+    }
+
+    double averageTurnaroundTime = (double)totalTurnaroundTime / n;
+    double averageWaitingTime = (double)totalWaitingTime / n;
+
+    printf("\nAverage Turnaround Time: %.2f\n", averageTurnaroundTime);
+    printf("Average Waiting Time: %.2f\n", averageWaitingTime);
+}
+
+
+void sjfp() {
+    int n;
+    printf("Enter the number of processes: ");
+    scanf("%d", &n);
+    struct Process processes[n];
+
+    for (int i = 0; i < n; i++) {
+        processes[i].id = i + 1;
+        printf("Enter arrival time and burst time for process %d: ", processes[i].id);
+        scanf("%d %d", &processes[i].arrivalTime, &processes[i].burstTime);
+        processes[i].remainingTime = processes[i].burstTime;
+    }
+
+    sortByArrivalTime(processes, n);
+
+    int currentTime = 0;
+    int completedProcesses = 0;
+    int completionTime[n];
+    int turnaroundTime[n];
+    int waitingTime[n];
+
+    printf("Gantt Chart:\n");
+
+    while (completedProcesses < n) {
+        int shortestJobIndex = findShortestJob(processes, n, currentTime);
+        if (shortestJobIndex == -1) {
+            printf("IDLE ");
+            currentTime++;
+        } else {
+            printf("P%d ", processes[shortestJobIndex].id);
+            processes[shortestJobIndex].remainingTime--;
+            currentTime++;
+
+            if (processes[shortestJobIndex].remainingTime == 0) {
+                completedProcesses++;
+                completionTime[shortestJobIndex] = currentTime;
+            }
+        }
+    }
+    printf("\n");
+
+    int totalTurnaroundTime = 0;
+    int totalWaitingTime = 0;
+
+    for (int i = 0; i < n; i++) {
+        turnaroundTime[i] = completionTime[i] - processes[i].arrivalTime;
+        waitingTime[i] = turnaroundTime[i] - processes[i].burstTime;
+        totalTurnaroundTime += turnaroundTime[i];
+        totalWaitingTime += waitingTime[i];
+    }
+
+    printf("\nProcess\tArrival\tBurst\tCompletion\tTurnaround\tWaiting\n");
+
+    for (int i = 0; i < n; i++) {
+        printf("%d\t%d\t%d\t%d\t\t%d\t\t%d\n", processes[i].id, processes[i].arrivalTime,
+               processes[i].burstTime,
+               completionTime[i], turnaroundTime[i], waitingTime[i]);
+    }
+
+    double averageTurnaroundTime = (double)totalTurnaroundTime / n;
+    double averageWaitingTime = (double)totalWaitingTime / n;
+
+    printf("\nAverage Turnaround Time: %.2f\n", averageTurnaroundTime);
+    printf("Average Waiting Time: %.2f\n", averageWaitingTime);
+}
+
+int rr() {
+    int n, timeQuantum;
+    printf("Enter the number of processes: ");
+    scanf("%d", &n);
+    printf("Enter the time quantum: ");
+    scanf("%d", &timeQuantum);
+   
+    struct Process processes[n];
+
+    for (int i = 0; i < n; i++) {
+        processes[i].id = i + 1;
+        printf("Enter arrival time and burst time for process %d: ", processes[i].id);
+        scanf("%d %d", &processes[i].arrivalTime, &processes[i].burstTime);
+        processes[i].remainingTime = processes[i].burstTime;
+        processes[i].completionTime = 0;
+        processes[i].executed = false;
+    }
+
+    int currentTime = 0;
+    int completedProcesses = 0;
+
+    printf("Gantt Chart:\n");
+    while (completedProcesses < n) {
+        int executed = 0;
+
+        for (int i = 0; i < n; i++) {
+            if (!processes[i].executed && processes[i].arrivalTime <= currentTime) {
+                int timeSlice = (processes[i].remainingTime > timeQuantum) ? timeQuantum : processes[i].remainingTime;
+                processes[i].remainingTime -= timeSlice;
+
+                for (int j = 0; j < timeSlice; j++) {
+                    printf("| P%d ", processes[i].id);
+                }
+
+                currentTime += timeSlice;
+
+                if (processes[i].remainingTime == 0) {
+                    completedProcesses++;
+                    processes[i].completionTime = currentTime;
+                    processes[i].executed = true;
+                    printf("| ");
+                }
+
+                executed = 1;
+            }
+        }
+
+        if (!executed) {
+            currentTime++;
+            printf("| IDLE ");
+        }
+    }
+
+    printf("\n");
+    int turnaroundTime[n],waitingTime[n];
+    int totalTurnaroundTime = 0;
+    int totalWaitingTime = 0;
+
+    for (int i = 0; i < n; i++) {
+        turnaroundTime[i] = processes[i].completionTime - processes[i].arrivalTime;
+        waitingTime[i] = turnaroundTime[i] - processes[i].burstTime;
+
+        totalTurnaroundTime += turnaroundTime[i];
+        totalWaitingTime += waitingTime[i];
+
+        printf("Process %d: Turnaround Time = %d, Waiting Time = %d\n", processes[i].id, turnaroundTime[i], waitingTime[i]);
+    }
+
+    double averageTurnaroundTime = (double)totalTurnaroundTime / n;
+    double averageWaitingTime = (double)totalWaitingTime / n;
+
+    printf("Average Turnaround Time: %.2f\n", averageTurnaroundTime);
+    printf("Average Waiting Time: %.2f\n", averageWaitingTime);
+
+    return 0;
+}
+
+int main() {
+    while (1) {
+        int choice;
+
+        printf("Menu:\n");
+        printf("1. SJF NonPreemptive\n");
+        printf("2. SJF Preemptive\n");
+        printf("3. Round Robin\n");
+        printf("4. Exit\n");
+
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                sjfnp();
+                break;
+
+            case 2:
+                sjfp();
+                break;
+
+            case 3:
+                rr();
+                break;
+
+            case 4:
+                printf("Exiting the program\n");
+                return 0;
+                break;
+
+            default:
+                printf("Invalid choice\n");
+        }
+    }
     return 0;
 }
