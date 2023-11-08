@@ -280,3 +280,148 @@ int main() {
     }
     return 0;
 }
+//priority scheduling
+
+/*
+ * C program to implement priority scheduling
+ */
+ 
+#include <stdio.h>
+ 
+//Function to swap two variables
+void swap(int *a,int *b)
+{
+    int temp=*a;
+    *a=*b;
+    *b=temp;
+}
+int main()
+{
+    int n;
+    printf("Enter Number of Processes: ");
+    scanf("%d",&n);
+ 
+    // b is array for burst time, p for priority and index for process id
+    int b[n],p[n],index[n];
+    for(int i=0;i<n;i++)
+    {
+        printf("Enter Burst Time and Priority Value for Process %d: ",i+1);
+        scanf("%d %d",&b[i],&p[i]);
+        index[i]=i+1;
+    }
+    for(int i=0;i<n;i++)
+    {
+        int a=p[i],m=i;
+ 
+        //Finding out highest priority element and placing it at its desired position
+        for(int j=i;j<n;j++)
+        {
+            if(p[j] > a)
+            {
+                a=p[j];
+                m=j;
+            }
+        }
+ 
+        //Swapping processes
+        swap(&p[i], &p[m]);
+        swap(&b[i], &b[m]);
+        swap(&index[i],&index[m]);
+    }
+ 
+    // T stores the starting time of process
+    int t=0;
+ 
+    //Printing scheduled process
+    printf("Order of process Execution is\n");
+    for(int i=0;i<n;i++)
+    {
+        printf("P%d is executed from %d to %d\n",index[i],t,t+b[i]);
+        t+=b[i];
+    }
+    printf("\n");
+    printf("Process Id     Burst Time   Wait Time    TurnAround Time\n");
+    int wait_time=0;
+    for(int i=0;i<n;i++)
+    {
+        printf("P%d          %d          %d          %d\n",index[i],b[i],wait_time,wait_time + b[i]);
+        wait_time += b[i];
+    }
+    return 0;
+}
+
+//fcfs scheduling 
+#include<stdio.h>
+int main()
+{
+    int  p[10],at[10],bt[10],ct[10],tat[10],wt[10],i,j,temp=0,n;
+    float awt=0,atat=0;
+    printf("enter no of proccess you want:");
+    scanf("%d",&n);
+    printf("enter %d process:",n);
+    for(i=0;i<n;i++)
+    {
+    scanf("%d",&p[i]);
+    }
+    printf("enter %d arrival time:",n);
+    for(i=0;i<n;i++)
+    {
+    scanf("%d",&at[i]);
+    }
+    printf("enter %d burst time:",n);
+    for(i=0;i<n;i++)
+    {
+    scanf("%d",&bt[i]);
+    }
+    // sorting at,bt, and process according to at
+    for(i=0;i<n;i++)
+    {
+     for(j=0;j<(n-i);j++)
+    {
+      if(at[j]>at[j+1])
+     {
+        temp=p[j+1];
+        p[j+1]=p[j];
+        p[j]=temp;
+        temp=at[j+1];
+        at[j+1]=at[j];
+        at[j]=temp;
+        temp=bt[j+1];
+        bt[j+1]=bt[j];
+        bt[j]=temp;
+      }
+     }
+    }
+    /* calculating 1st ct */
+    ct[0]=at[0]+bt[0];
+    /* calculating 2 to n ct */
+    for(i=1;i<n;i++)
+    {  
+      //when proess is ideal in between i and i+1
+      temp=0;
+     if(ct[i-1]<at[i])
+     {
+        temp=at[i]-ct[i-1];
+     }
+     ct[i]=ct[i-1]+bt[i]+temp;
+    }
+    /* calculating tat and wt */
+    printf("\np\t A.T\t B.T\t C.T\t TAT\t WT");
+    for(i=0;i<n;i++)
+    {
+    tat[i]=ct[i]-at[i];
+    wt[i]=tat[i]-bt[i];
+    atat+=tat[i];
+    awt+=wt[i];
+    }
+    atat=atat/n;
+    awt=awt/n;
+    for(i=0;i<n;i++)
+    {
+      printf("\nP%d\t %d\t %d\t %d \t %d \t %d",p[i],at[i],bt[i],ct[i],tat[i],wt[i]);
+    }
+    printf("\naverage turnaround time is %f",atat);
+
+    printf("\naverage wating timme is %f",awt);
+    return 0;
+}
