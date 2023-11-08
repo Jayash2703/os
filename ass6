@@ -61,6 +61,7 @@ int fifo(int requestSequence[], int seq)   // don parameter saglya algo madhe
 
     return numberOfPageFault;
 }
+
 /********************************************************FIFO END*************************************************************************************/
 
 int getFarthestIndex(int requestResponse[], int start, int seq, int frames[]) // sub function la 4 parameter
@@ -96,6 +97,9 @@ int optimal(int requestSequence[], int seq)
     int numberOfPageFaults = 0;
     int size = 0;
     int frames[frameSize];
+    for(int i=0;i<frameSize;i++){
+        frames[i]=-1;
+    }
     for (int i = 0; i < seq; i++)
     {
         if (checkPageFault(requestSequence[i], frames))
@@ -111,6 +115,7 @@ int optimal(int requestSequence[], int seq)
             {
                 int ind = getFarthestIndex(requestSequence, i + 1, seq, frames);
                 numberOfPageFaults++;
+                
                 frames[ind] = requestSequence[i];
                 printFrame(frames, size, 'm');
             }
@@ -152,6 +157,9 @@ int lru(int requestSequence[], int seq)
     int numberOfPageFaults = 0;
     int size = 0;
     int frames[frameSize];
+    for(int i=0;i<frameSize;i++){
+        frames[i]=-1;
+    }
     for (int i = 0; i < seq; i++)
     {
 
